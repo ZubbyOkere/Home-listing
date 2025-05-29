@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import db from "./db";
 import { uploadImage } from "./supabase";
-import { promiseHooks } from "node:v8";
+import { useAuth } from "@clerk/nextjs";
 
 const getAuth = async () => {
   const user = await currentUser();
@@ -191,4 +191,86 @@ export const fetchProperties = async ({
     },
   });
   return properties;
+};
+
+export const fetchFavoriteId = async ({
+  propertyId,
+}: {
+  propertyId: string;
+}) => {
+  const user = await getAuth();
+
+  const favorite = await db.favorite.findFirst({
+    where: {
+      propertyId,
+      profileId: user.id,
+    },
+    select: {
+      id: true,
+    },
+  });
+  return favorite?.id || null;
+};
+
+export const toggleFavoriteAction = async (prevState: {
+  propertyId: string;
+  favoriteId: string | null;
+  pathname: string;
+}) => {
+  const { propertyId, favoriteId, pathname } = prevState;
+  const user = await getAuth();
+  try {
+    if (favoriteId) {
+      await db.favorite.delete({
+        where: {
+          id: favoriteId,
+        },
+      });
+    } else {
+      await db.favorite.create({
+        data: {
+          propertyId,
+          profileId: user.id,
+        },
+      });
+    }
+    revalidatePath(pathname);
+  } catch (error) {
+    renderError(error);
+  }
+
+  return { message: "toggle favorite" };
+};
+
+export const fetchFavorites = async () => {
+  const user = getAuth();
+  const favorites = await db.favorite.findMany({
+    where: {
+      profileId: (await user).id,
+    },
+    select: {
+      property: {
+        select: {
+          id: true,
+          name: true,
+          tagline: true,
+          country: true,
+          image: true,
+          price: true,
+        },
+      },
+    },
+  });
+  return favorites.map((favorite) => favorite.property);
+};
+export const fetchPropertiesDetails = async (id: string) => {
+  const propertyDetails = await db.property.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      profile: true,
+    },
+  });
+  return propertyDetails;
 };

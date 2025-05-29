@@ -4,3 +4,7 @@ export const formatCurrency = (amount: number): string => {
     currency: "USD",
   }).format(amount);
 };
+
+export function formatQuantity(quantity: number, noun: string): string {
+  return quantity === 1 ? `${quantity} ${noun}` : `${quantity}${noun}s`;
+}
