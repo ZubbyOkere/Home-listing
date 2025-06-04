@@ -11,7 +11,7 @@ export const uploadImage = async (image: File) => {
   const timeStamp = Date.now();
   const newName = `${timeStamp}-${image.name}`;
 
-  const { data } = await supabase.storage
+  await supabase.storage
     .from(bucket)
     .upload(newName, image, { cacheControl: "3600" });
   return supabase.storage.from(bucket).getPublicUrl(newName).data.publicUrl;
