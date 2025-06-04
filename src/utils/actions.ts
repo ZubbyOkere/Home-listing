@@ -28,7 +28,7 @@ const renderError = (error: unknown): { message: string } => {
 };
 
 export const createProfileAction = async (
-  // prevState: any,
+  prevState: any,
   formData: FormData
 ) => {
   try {
@@ -87,7 +87,7 @@ export const fetchProfile = async () => {
 };
 
 export const updateProfileAction = async (
-  // prevState: any,
+  prevState: any,
   formData: FormData
 ): Promise<{ message: string }> => {
   const user = getAuth();
@@ -109,7 +109,7 @@ export const updateProfileAction = async (
 };
 
 export const updateProfileImageAction = async (
-  // prevState: any,
+  prevState: any,
   formData: FormData
 ): Promise<{ message: string }> => {
   const user = await currentUser();
@@ -136,7 +136,7 @@ export const updateProfileImageAction = async (
 };
 
 export const createPropertyAction = async (
-  // prevState: any,
+  prevState: any,
   formData: FormData
 ): Promise<{ message: string }> => {
   const user = await currentUser();
