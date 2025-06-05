@@ -136,7 +136,7 @@ export const updateProfileImageAction = async (
 };
 
 export const createPropertyAction = async (
-  // prevState: any,
+  prevState: any,
   formData: FormData
 ): Promise<{ message: string }> => {
   const user = await getAuth();
