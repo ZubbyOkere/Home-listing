@@ -10,6 +10,9 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware((auth, req) => {
+  if (req.nextUrl.pathname === "/not-found") {
+    return;
+  }
   if (isProtectedRoute(req)) auth().protect();
 });
 
