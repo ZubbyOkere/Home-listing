@@ -7,6 +7,10 @@ export const supabase = createClient(
   process.env.SUPABASE_KEY as string
 );
 
+if (!supabase) {
+  console.warn("onsole.warn('NEXT_PUBLIC_SUPABASE_URL is not set");
+}
+
 export const uploadImage = async (image: File) => {
   const timeStamp = Date.now();
   const newName = `${timeStamp}-${image.name}`;
