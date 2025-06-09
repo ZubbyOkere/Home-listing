@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/bookings(.*)",
@@ -11,9 +12,11 @@ const isProtectedRoute = createRouteMatcher([
 
 export default clerkMiddleware((auth, req) => {
   if (req.nextUrl.pathname === "/not-found") {
-    return;
+    return NextResponse.next();
   }
   if (isProtectedRoute(req)) auth().protect();
+
+  return NextResponse.next();
 });
 
 export const config = {
