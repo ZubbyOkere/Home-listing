@@ -1,5 +1,5 @@
 "use client";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // usePathname
 import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
