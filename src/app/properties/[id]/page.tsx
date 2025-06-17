@@ -1,7 +1,7 @@
 import FavoriteToggleButton from "@/components/card/FavoriteToggleButton";
 import BreadCrumbs from "@/components/properties/BreadCrumbs";
 import ShareButton from "@/components/properties/ShareButton";
-import { fetchPropertiesDetails } from "@/utils/actions";
+import { fetchPropertiesDetails, findExistingReview } from "@/utils/actions";
 import { redirect } from "next/navigation";
 import React from "react";
 import ImageContainer from "../ImageContainer";
@@ -14,6 +14,9 @@ import Description from "../Description";
 import Amenities from "@/components/properties/Amenities";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+import SubmitReview from "@/components/reviews/SubmitReview";
+import PropertyReviews from "@/components/reviews/PropertyReviews";
+import { auth } from "@clerk/nextjs/server";
 
 const DynamicMap = dynamic(
   () => import("@/components/properties/PropertyMap"),
@@ -23,6 +26,7 @@ const DynamicMap = dynamic(
   }
 );
 async function PropertyDetailsPage({ params }: { params: { id: string } }) {
+  const { userId } = auth();
   const property = await fetchPropertiesDetails(params.id);
   const firstName = property?.profile.firstName ?? "";
   const profileImage = property?.profile.profileImage ?? "";
@@ -30,6 +34,11 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
   if (!property) redirect("/");
   const { baths, bedrooms, beds, guests } = property;
   const details = { baths, bedrooms, beds, guests };
+
+  const isNotOwner = property.profile.clerkId !== userId;
+  const reviewsDoesNotExist =
+    userId && isNotOwner && !(await findExistingReview(userId, property.id));
+
   return (
     <section>
       <BreadCrumbs name={property.name} />
@@ -59,6 +68,8 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
           <BookingCalender />
         </div>
       </section>
+      {reviewsDoesNotExist && <SubmitReview propertyId={property.id} />}
+      <PropertyReviews propertyId={property.id} />
     </section>
   );
 }

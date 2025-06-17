@@ -1,5 +1,6 @@
 "use server";
 import {
+  createReviewSchema,
   imageSchema,
   profileSchema,
   propertySchema,
@@ -273,4 +274,118 @@ export const fetchPropertiesDetails = async (id: string) => {
     },
   });
   return propertyDetails;
+};
+
+export const createReviewAction = async (
+  prevState: any,
+  formData: FormData
+) => {
+  const user = await getAuth();
+  try {
+    const rawData = Object.fromEntries(formData);
+    const validatedFields = validateWithZodSchema(createReviewSchema, rawData);
+    await db.review.create({
+      data: {
+        ...validatedFields,
+        profileId: user.id,
+      },
+    });
+    revalidatePath(`/properties/${validatedFields.propertyId}`);
+  } catch (error) {
+    renderError(error);
+  }
+  return { message: "Review Created Successfully" };
+};
+
+export const fetchPropertyReviews = async (propertyId: string) => {
+  const reviews = await db.review.findMany({
+    where: {
+      propertyId,
+    },
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      profile: {
+        select: {
+          firstName: true,
+          profileImage: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return reviews;
+};
+
+export const fetchPropertyReviewsByUser = async () => {
+  const user = await getAuth();
+
+  const reviews = await db.review.findMany({
+    where: {
+      profileId: user.id,
+    },
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      property: {
+        select: {
+          name: true,
+          image: true,
+        },
+      },
+    },
+  });
+  return reviews;
+};
+
+export const deleteReviewAction = async (prevState: { reviewId: string }) => {
+  const { reviewId } = prevState;
+  const user = await getAuth();
+  try {
+    const reviews = await db.review.delete({
+      where: {
+        id: reviewId,
+        profileId: user.id,
+      },
+    });
+    revalidatePath("/reviews");
+  } catch (error) {
+    renderError(error);
+  }
+  return { message: " review successfully deleted" };
+};
+
+export async function fetchPropertyRating(propertyId: string) {
+  const result = await db.review.groupBy({
+    by: ["propertyId"],
+    _avg: {
+      rating: true,
+    },
+    _count: {
+      rating: true,
+    },
+    where: {
+      propertyId,
+    },
+  });
+  return {
+    rating: result[0]?._avg?.rating?.toFixed(1) ?? 0,
+    count: result[0]?._count?.rating ?? 0,
+  };
+}
+
+export const findExistingReview = async (
+  userId: string,
+  propertyId: string
+) => {
+  return db.review.findFirst({
+    where: {
+      profileId: userId,
+      propertyId: propertyId,
+    },
+  });
 };
