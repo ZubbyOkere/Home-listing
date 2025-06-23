@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import React from "react";
 import ImageContainer from "../ImageContainer";
 import PropertyRating from "@/components/card/PropertyRating";
-import BookingCalender from "@/components/properties/booking/BookingCalender";
 import PropertyDetails from "@/components/properties/PropertyDetails";
 import UserInfo from "@/components/properties/UserInfo";
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +24,14 @@ const DynamicMap = dynamic(
     loading: () => <Skeleton className="h-[400px] w-full" />,
   }
 );
+
+const DynamicBookingWrapper = dynamic(
+  () => import("@/components/booking/BookingWrapper"),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[400px] w-full" />,
+  }
+);
 async function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const { userId } = auth();
   const property = await fetchPropertiesDetails(params.id);
@@ -38,6 +45,8 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const isNotOwner = property.profile.clerkId !== userId;
   const reviewsDoesNotExist =
     userId && isNotOwner && !(await findExistingReview(userId, property.id));
+
+  console.log(property.bookings);
 
   return (
     <section>
@@ -65,7 +74,11 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
           <DynamicMap countryCode={property.country} />
         </div>
         <div className="lg:col-span-4 flex flex-col items-center">
-          <BookingCalender />
+          <DynamicBookingWrapper
+            propertyId={property.id}
+            price={property.price}
+            bookings={property.bookings}
+          />
         </div>
       </section>
       {reviewsDoesNotExist && <SubmitReview propertyId={property.id} />}
