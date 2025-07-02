@@ -6,7 +6,7 @@ type FormInputProps = {
   type: string;
   label: string;
   defaultValue?: string;
-  placeHolder: string;
+  placeHolder?: string;
 };
 const FormInput = (props: FormInputProps) => {
   const { name, type, label, defaultValue, placeHolder } = props;

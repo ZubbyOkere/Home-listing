@@ -22,3 +22,19 @@ export type Booking = {
   checkIn: Date;
   checkOut: Date;
 };
+
+export type Rental = {
+  id: string;
+  name: string;
+  tagline: string;
+  price: number;
+  category: string;
+  country: string;
+  description: string;
+  guests: number;
+  bedrooms: number;
+  beds: number;
+  baths: number;
+  amenities: string;
+  image: string;
+};
